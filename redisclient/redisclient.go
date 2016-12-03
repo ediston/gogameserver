@@ -7,7 +7,7 @@ import (
 )
 
 type redisClient struct {
-	var client *redis.Client
+	client *redis.Client
 }
 
 func (rc redisClient) Init() {
@@ -31,7 +31,7 @@ func (rc redisClient) SetClient(){
 // dur = int64 nanosecond count.
 func (rc redisClient) SaveKeyValTemporary(key String, val interface{}, dur time.Duration) error{
 	setClient()
-	err := client.Set(key, val, dur).Err()
+	err := rc.client.Set(key, val, dur).Err()
 	if err != nil {
 		return error
 	}
@@ -47,25 +47,25 @@ func (rc redisClient) SaveKeyValForever(key String, val interface{}) error{
 // 
 func (rc redisClient) DelKey(key String) interface{}{
 	setClient()
-	return  client.Del(key)
+	return  rc.client.Del(key)
 }
 
 // 
-func (rc redisClient) KeyExists(key String}) bool{
+func (rc redisClient) KeyExists(key String) bool{
 	setClient()
-	return  (bool)client.Exists(key)
+	return  (bool)rc.client.Exists(key)
 }
 
 // 
 func (rc redisClient) GetVal(key String) (interface{}, Error){
 	setClient()
-	val, err := client.Get(key).Result()
+	val, err := rc.client.Get(key).Result()
 	return val, err
 }
 
 func (rc redisClient) AddToSet(setName String, value int64, key interface{}){
 	setClient()
-	val, err := client.ZAdd(setName, value, key)
+	val, err := rc.client.ZAdd(setName, value, key)
 	return val, err
 }
 
@@ -74,25 +74,25 @@ func (rc redisClient) GetTop(setName String, topAmount int64) (interface{}, Erro
 	if topAmount <= 0 {
 		topAmount = 1
 	}
-	val, err := client.ZRangeWithScores(setName, start, topAmount-1)
+	val, err := rc.client.ZRangeWithScores(setName, start, topAmount-1)
 	return val, err
 }
 
 func (rc redisClient) GetRank(setName String, key String) (interface{}, Error){
 	setClient()
-	val, err := client.ZRangeWithScores(setName, key)
+	val, err := rc.client.ZRangeWithScores(setName, key)
 	return val, err
 }
 
 func (rc redisClient) GetScore(setName String, key String) (interface{}, Error){
 	setClient()
-	val, err := client.ZScore(setName, key)
+	val, err := rc.client.ZScore(setName, key)
 	return val, err
 }
 
 func (rc redisClient) RemScore(setName String, key String) (interface{}, Error){
 	setClient()
-	val, err := client.ZRem(setName, key)
+	val, err := rc.client.ZRem(setName, key)
 	return val, err
 }
 
