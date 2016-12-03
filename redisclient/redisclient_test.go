@@ -32,7 +32,7 @@ func TestSaveKeyValTemporary(t *testing.T) {
 func TestSaveKeyValForever(t *testing.T) {
     var rc redisClient
     rc.SaveKeyValForever(keyStr, valStr)
-    if !rc.KeyExists() {
+    if !rc.KeyExists(keyStr) {
         t.Errorf("Key should exist!")
     }
     rc.DelKey(keyStr)
