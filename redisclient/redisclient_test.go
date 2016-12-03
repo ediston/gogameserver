@@ -2,7 +2,7 @@ package redisclient_test
 
 import (
     "string"
-    "redisclient"
+    "gogameserver/redisclient"
     "testing"
 )
 

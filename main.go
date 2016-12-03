@@ -5,7 +5,7 @@ import (
     "log"
     "net/http"
 
-    "redisclient/redisclient"
+    "gogameserver/redisclient"
 )
 
 func echoString(w http.ResponseWriter, r *http.Request) {
