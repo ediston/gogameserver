@@ -53,7 +53,7 @@ func (rc redisClient) DelKey(key String) interface{}{
 // 
 func (rc redisClient) KeyExists(key String) bool{
 	setClient()
-	return  (bool)rc.client.Exists(key)
+	return  rc.client.Exists(key)
 }
 
 // 
