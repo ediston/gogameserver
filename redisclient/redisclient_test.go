@@ -1,9 +1,9 @@
 package redisclient_test
 
 import (
-    "string"
-    "gogameserver/redisclient"
+    rcl "gogameserver/redisclient" 
     "testing"
+    "time"
 )
 
 
@@ -15,7 +15,7 @@ var tempStrs  = [] string{"00NeverAddThiskey0", "00NeverAddThiskey1",  "00NeverA
 
 
 func TestSaveKeyValTemporary(t *testing.T) {
-    var rc redisClient
+    rc := rcl.New()
     ttl := 10
     rc.SaveKeyValTemporary(keyStr, valStr, ttl*Second) // 10 seconds 10*1000 000 000
     if !rc.KeyExists() {
@@ -30,7 +30,7 @@ func TestSaveKeyValTemporary(t *testing.T) {
 
 // 
 func TestSaveKeyValForever(t *testing.T) {
-    var rc redisClient
+    rc := rcl.New()
     rc.SaveKeyValForever(keyStr, valStr)
     if !rc.KeyExists(keyStr) {
         t.Errorf("Key should exist!")
@@ -40,7 +40,7 @@ func TestSaveKeyValForever(t *testing.T) {
 
 // 
 func TestGetVal(t *testing.T) {
-    var rc redisClient
+    rc := rcl.New()
     rc.SaveKeyValForever(keyStr, valStr)
     tempVal, _ := rc.GetVal(keyStr) 
     if valStr != tempVal{
@@ -50,7 +50,7 @@ func TestGetVal(t *testing.T) {
 }
 
 func TestAddToSet(t *testing.T) {
-    var rc redisClient
+    rc := rcl.New()
     score := 12
     rc.AddToSet(setName, score, setKey)
     tempScore, err := rc.GetScore(setName, setKey)
@@ -61,7 +61,7 @@ func TestAddToSet(t *testing.T) {
 }
 
 func TestGetTop(t *testing.T) {
-    var rc redisClient
+    rc := rcl.New()
     var scores := []int64{2,1,7,4,0}
     for i:=0; i<5; i++ {
         rc.AddToSet(setName, scores[i], tempStrs[i])
