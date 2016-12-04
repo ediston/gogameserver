@@ -64,7 +64,7 @@ func (rc redisClient) GetVal(key string) (string, error){
 
 func (rc redisClient) AddToSet(setName string, Score float64, Member interface{}) (int64, error){
 	rc.SetClient()
-	return rc.client.ZAdd(setName, Z{Score, Member}).Result()
+	return rc.client.ZAdd(setName, redis.Z{Score, Member}).Result()
 }
 
 //([]Z, error)
@@ -81,7 +81,7 @@ type ZRangeByScore struct {
 }
 
 */
-func (rc redisClient) GetTop(setName string, topAmount int64) (interface{}, Error){
+func (rc redisClient) GetTop(setName string, topAmount int64) (interface{}, error){
 	rc.SetClient()
 	if topAmount <= 0 {
 		topAmount = 1
@@ -90,7 +90,7 @@ func (rc redisClient) GetTop(setName string, topAmount int64) (interface{}, Erro
 }
 
 // returns ([]Z, error)
-func (rc redisClient) GetRank(setName string, key string) (interface{}, Error){
+func (rc redisClient) GetRank(setName string, key string) (interface{}, error){
 	rc.SetClient()
 	return rc.client.ZRangeWithScores(setName, key).Result()
 }
