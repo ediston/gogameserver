@@ -11,7 +11,7 @@ type redisClient struct {
 }
 
 func (rc redisClient) Init() {
-	rc.setClient()
+	rc.SetClient()
 }
 
 func (rc redisClient) SetClient(){
@@ -30,7 +30,7 @@ func (rc redisClient) SetClient(){
 
 // dur = int64 nanosecond count.
 func (rc redisClient) SaveKeyValTemporary(key string, val interface{}, dur time.Duration) error{
-	setClient()
+	rc.SetClient()
 	err := rc.client.Set(key, val, dur).Err()
 	if err != nil {
 		return error
@@ -40,37 +40,37 @@ func (rc redisClient) SaveKeyValTemporary(key string, val interface{}, dur time.
 
 // 
 func (rc redisClient) SaveKeyValForever(key string, val interface{}) error{
-	setClient()
+	rc.SetClient()
 	return  saveKeyValTemporary(key, val, 0)
 }
 
 // 
 func (rc redisClient) DelKey(key string) interface{}{
-	setClient()
+	rc.SetClient()
 	return  rc.client.Del(key)
 }
 
 // 
 func (rc redisClient) KeyExists(key string) bool{
-	setClient()
+	rc.SetClient()
 	return  rc.client.Exists(key)
 }
 
 // 
 func (rc redisClient) GetVal(key string) (interface{}, Error){
-	setClient()
+	rc.SetClient()
 	val, err := rc.client.Get(key).Result()
 	return val, err
 }
 
 func (rc redisClient) AddToSet(setName string, value int64, key interface{}){
-	setClient()
+	rc.SetClient()
 	val, err := rc.client.ZAdd(setName, value, key)
 	return val, err
 }
 
 func (rc redisClient) GetTop(setName string, topAmount int64) (interface{}, Error){
-	setClient()
+	rc.SetClient()
 	if topAmount <= 0 {
 		topAmount = 1
 	}
@@ -79,19 +79,19 @@ func (rc redisClient) GetTop(setName string, topAmount int64) (interface{}, Erro
 }
 
 func (rc redisClient) GetRank(setName string, key string) (interface{}, Error){
-	setClient()
+	rc.SetClient()
 	val, err := rc.client.ZRangeWithScores(setName, key)
 	return val, err
 }
 
 func (rc redisClient) GetScore(setName string, key string) (interface{}, Error){
-	setClient()
+	rc.SetClient()
 	val, err := rc.client.ZScore(setName, key)
 	return val, err
 }
 
 func (rc redisClient) RemScore(setName string, key string) (interface{}, Error){
-	setClient()
+	rc.SetClient()
 	val, err := rc.client.ZRem(setName, key)
 	return val, err
 }
