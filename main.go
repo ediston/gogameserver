@@ -5,7 +5,7 @@ import (
     "log"
     "net/http"
 
-    "gogameserver/redisclient"
+    rcl "gogameserver/redisclient" 
 )
 
 func echoString(w http.ResponseWriter, r *http.Request) {
@@ -13,7 +13,7 @@ func echoString(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    rc := new redisclient()
+    rc := new rcl.redisClient()
     keyStr := "00NeverAddThiskey"
     valStr := "00NeverAddThisVal"
     rc.SaveKeyValForever(keyStr, valStr)
