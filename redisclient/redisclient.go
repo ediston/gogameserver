@@ -86,13 +86,13 @@ func (rc redisClient) GetTop(setName string, topAmount int64) (interface{}, erro
 	if topAmount <= 0 {
 		topAmount = 1
 	}
-	return rc.client.ZRangeWithScores(setName, start, topAmount-1).Result()
+	return rc.client.ZRangeWithScores(setName, 0, topAmount-1).Result()
 }
 
 // returns ([]Z, error)
-func (rc redisClient) GetRank(setName string, key string) (interface{}, error){
+func (rc redisClient) GetRank(setName string, key string) (int64, error){
 	rc.SetClient()
-	return rc.client.ZRangeWithScores(setName, key).Result()
+	return rc.client.ZRank(setName, key).Result()
 }
 
 func (rc redisClient) GetScore(setName string, key string) float64{
