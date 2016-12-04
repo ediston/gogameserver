@@ -33,7 +33,7 @@ func (rc redisClient) SaveKeyValTemporary(key string, val interface{}, dur time.
 	rc.SetClient()
 	err := rc.client.Set(key, val, dur).Err()
 	if err != nil {
-		return error
+		return err
 	}
 	return  nil
 }
@@ -41,58 +41,68 @@ func (rc redisClient) SaveKeyValTemporary(key string, val interface{}, dur time.
 // 
 func (rc redisClient) SaveKeyValForever(key string, val interface{}) error{
 	rc.SetClient()
-	return  saveKeyValTemporary(key, val, 0)
+	return  SaveKeyValTemporary(key, val, 0)
 }
 
 // 
-func (rc redisClient) DelKey(key string) interface{}{
+func (rc redisClient) DelKey(key string) (int64, error){
 	rc.SetClient()
-	return  rc.client.Del(key)
+	return  rc.client.Del(key).Result()
 }
 
 // 
-func (rc redisClient) KeyExists(key string) bool{
+func (rc redisClient) KeyExists(key string) (bool, error){
 	rc.SetClient()
-	return  rc.client.Exists(key)
+	return  rc.client.Exists(key).Result()
 }
 
 // 
-func (rc redisClient) GetVal(key string) (interface{}, Error){
+func (rc redisClient) GetVal(key string) (int64, error){
 	rc.SetClient()
-	val, err := rc.client.Get(key).Result()
-	return val, err
+	return rc.client.Get(key).Result()
 }
 
-func (rc redisClient) AddToSet(setName string, value int64, key interface{}){
+func (rc redisClient) AddToSet(setName string, value int64, key interface{}) (int64, error){
 	rc.SetClient()
-	val, err := rc.client.ZAdd(setName, value, key)
-	return val, err
+	return rc.client.ZAdd(setName, value, key)
 }
 
+//([]Z, error)
+/*
+type Z
+type Z struct {
+    Score  float64
+    Member string
+}
+type ZRangeByScore
+type ZRangeByScore struct {
+    Min, Max string
+
+    Offset, Count int64
+}
+
+*/
 func (rc redisClient) GetTop(setName string, topAmount int64) (interface{}, Error){
 	rc.SetClient()
 	if topAmount <= 0 {
 		topAmount = 1
 	}
-	val, err := rc.client.ZRangeWithScores(setName, start, topAmount-1)
-	return val, err
+	return rc.client.ZRangeWithScores(setName, start, topAmount-1).Result
 }
 
+// returns ([]Z, error)
 func (rc redisClient) GetRank(setName string, key string) (interface{}, Error){
 	rc.SetClient()
-	val, err := rc.client.ZRangeWithScores(setName, key)
-	return val, err
+	return rc.client.ZRangeWithScores(setName, key).Result
 }
 
-func (rc redisClient) GetScore(setName string, key string) (interface{}, Error){
+func (rc redisClient) GetScore(setName string, key string) float64{
 	rc.SetClient()
-	val, err := rc.client.ZScore(setName, key)
-	return val, err
+	return rc.client.ZScore(setName, key).Val()
 }
 
-func (rc redisClient) RemScore(setName string, key string) (interface{}, Error){
+func (rc redisClient) RemScore(setName string, key string)  (int64, error){
 	rc.SetClient()
-	val, err := rc.client.ZRem(setName, key)
-	return val, err
+	return rc.client.ZRem(setName, key)
 }
 
