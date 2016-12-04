@@ -62,14 +62,13 @@ func (rc redisClient) GetVal(key string) (string, error){
 	return rc.client.Get(key).Result()
 }
 
-func (rc redisClient) AddToSet(setName string, value int64, key interface{}) (int64, error){
+func (rc redisClient) AddToSet(setName string, Score float64, Member interface{}) (int64, error){
 	rc.SetClient()
-	return rc.client.ZAdd(setName, value, key).Result()
+	return rc.client.ZAdd(setName, Z{Score, Member}).Result()
 }
 
 //([]Z, error)
 /*
-type Z
 type Z struct {
     Score  float64
     Member string
