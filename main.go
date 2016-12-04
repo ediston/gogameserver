@@ -13,7 +13,7 @@ func echoString(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    var rc redisClient
+    rc := new redisclient()
     keyStr := "00NeverAddThiskey"
     valStr := "00NeverAddThisVal"
     rc.SaveKeyValForever(keyStr, valStr)
