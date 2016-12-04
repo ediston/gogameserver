@@ -62,7 +62,7 @@ func TestAddToSet(t *testing.T) {
 
 func TestGetTop(t *testing.T) {
     rc := rcl.New()
-    var scores := []int64{2,1,7,4,0}
+    scores := []int64{2,1,7,4,0}
     for i:=0; i<5; i++ {
         rc.AddToSet(setName, scores[i], tempStrs[i])
     }
