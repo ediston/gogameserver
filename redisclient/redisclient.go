@@ -41,7 +41,7 @@ func (rc redisClient) SaveKeyValTemporary(key string, val interface{}, dur time.
 // 
 func (rc redisClient) SaveKeyValForever(key string, val interface{}) error{
 	rc.SetClient()
-	return  SaveKeyValTemporary(key, val, 0)
+	return  rc.SaveKeyValTemporary(key, val, 0)
 }
 
 // 
@@ -57,14 +57,14 @@ func (rc redisClient) KeyExists(key string) (bool, error){
 }
 
 // 
-func (rc redisClient) GetVal(key string) (int64, error){
+func (rc redisClient) GetVal(key string) (string, error){
 	rc.SetClient()
 	return rc.client.Get(key).Result()
 }
 
 func (rc redisClient) AddToSet(setName string, value int64, key interface{}) (int64, error){
 	rc.SetClient()
-	return rc.client.ZAdd(setName, value, key)
+	return rc.client.ZAdd(setName, value, key).Result()
 }
 
 //([]Z, error)
@@ -87,13 +87,13 @@ func (rc redisClient) GetTop(setName string, topAmount int64) (interface{}, Erro
 	if topAmount <= 0 {
 		topAmount = 1
 	}
-	return rc.client.ZRangeWithScores(setName, start, topAmount-1).Result
+	return rc.client.ZRangeWithScores(setName, start, topAmount-1).Result()
 }
 
 // returns ([]Z, error)
 func (rc redisClient) GetRank(setName string, key string) (interface{}, Error){
 	rc.SetClient()
-	return rc.client.ZRangeWithScores(setName, key).Result
+	return rc.client.ZRangeWithScores(setName, key).Result()
 }
 
 func (rc redisClient) GetScore(setName string, key string) float64{
@@ -103,6 +103,6 @@ func (rc redisClient) GetScore(setName string, key string) float64{
 
 func (rc redisClient) RemScore(setName string, key string)  (int64, error){
 	rc.SetClient()
-	return rc.client.ZRem(setName, key)
+	return rc.client.ZRem(setName, key).Result()
 }
 
