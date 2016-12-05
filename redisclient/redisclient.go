@@ -2,7 +2,6 @@ package redisclient
 
 import (
     "time"
-
     "gopkg.in/redis.v5"
 )
 
@@ -83,7 +82,6 @@ type Z struct {
     Score  float64
     Member string
 }
-type ZRangeByScore
 type ZRangeByScore struct {
     Min, Max string
 
@@ -91,23 +89,25 @@ type ZRangeByScore struct {
 }
 
 */
+
+// returns ([]Z, error)
 func (rc *redisClient) GetTop(setName string, topAmount int64) (interface{}, error){
 	rc.SetClient()
 	if topAmount <= 0 {
 		topAmount = 1
 	}
-	return rc.client.ZRangeWithScores(setName, 0, topAmount-1).Result()
+	return rc.client.ZRevRangeWithScores(setName, 0, topAmount-1).Result()
 }
 
-// returns ([]Z, error)
+// Rank starts from 0
 func (rc *redisClient) GetRank(setName string, key string) (int64, error){
 	rc.SetClient()
-	return rc.client.ZRank(setName, key).Result()
+	return rc.client.ZRevRank(setName, key).Result()
 }
 
-func (rc *redisClient) GetScore(setName string, key string) float64{
+func (rc *redisClient) GetScore(setName string, key string) (float64, error){
 	rc.SetClient()
-	return rc.client.ZScore(setName, key).Val()
+	return rc.client.ZScore(setName, key).Result()
 }
 
 func (rc *redisClient) RemScore(setName string, key string)  (int64, error){
