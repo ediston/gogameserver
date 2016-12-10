@@ -5,12 +5,12 @@ import (
     "gopkg.in/redis.v5"
 )
 
-type redisClient struct {
+type RedisClient struct {
 	client *redis.Client
 }
 
-func New() (rc * redisClient) {
-    return &redisClient{
+func New() (rc * RedisClient) {
+    return &RedisClient{
         client: redis.NewClient(&redis.Options{
 	        Addr:     "localhost:6379",
 	        DialTimeout:  10 * time.Second,
@@ -23,7 +23,7 @@ func New() (rc * redisClient) {
 }
 
 
-func (rc *redisClient) SetClient(){
+func (rc *RedisClient) SetClient(){
 	if rc.client != nil{
 		return
 	}
@@ -38,7 +38,7 @@ func (rc *redisClient) SetClient(){
 }
 
 // dur = int64 nanosecond count.
-func (rc *redisClient) SaveKeyValTemporary(key string, val interface{}, dur time.Duration) error{
+func (rc *RedisClient) SaveKeyValTemporary(key string, val interface{}, dur time.Duration) error{
 	rc.SetClient()
 	err := rc.client.Set(key, val, dur).Err()
 	if err != nil {
@@ -48,30 +48,30 @@ func (rc *redisClient) SaveKeyValTemporary(key string, val interface{}, dur time
 }
 
 // 
-func (rc *redisClient) SaveKeyValForever(key string, val interface{}) error{
+func (rc *RedisClient) SaveKeyValForever(key string, val interface{}) error{
 	rc.SetClient()
 	return  rc.SaveKeyValTemporary(key, val, 0)
 }
 
 // 
-func (rc *redisClient) DelKey(key string) (int64, error){
+func (rc *RedisClient) DelKey(key string) (int64, error){
 	rc.SetClient()
 	return  rc.client.Del(key).Result()
 }
 
 // 
-func (rc *redisClient) KeyExists(key string) (bool, error){
+func (rc *RedisClient) KeyExists(key string) (bool, error){
 	rc.SetClient()
 	return  rc.client.Exists(key).Result()
 }
 
 // 
-func (rc *redisClient) GetVal(key string) (string, error){
+func (rc *RedisClient) GetVal(key string) (string, error){
 	rc.SetClient()
 	return rc.client.Get(key).Result()
 }
 
-func (rc *redisClient) AddToSet(setName string, Score float64, Member interface{}) (int64, error){
+func (rc *RedisClient) AddToSet(setName string, Score float64, Member interface{}) (int64, error){
 	rc.SetClient()
 	return rc.client.ZAdd(setName, redis.Z{Score, Member}).Result()
 }
@@ -91,7 +91,7 @@ type ZRangeByScore struct {
 */
 
 // returns ([]Z, error)
-func (rc *redisClient) GetTop(setName string, topAmount int64) (interface{}, error){
+func (rc *RedisClient) GetTop(setName string, topAmount int64) (interface{}, error){
 	rc.SetClient()
 	if topAmount <= 0 {
 		topAmount = 1
@@ -100,17 +100,17 @@ func (rc *redisClient) GetTop(setName string, topAmount int64) (interface{}, err
 }
 
 // Rank starts from 0
-func (rc *redisClient) GetRank(setName string, key string) (int64, error){
+func (rc *RedisClient) GetRank(setName string, key string) (int64, error){
 	rc.SetClient()
 	return rc.client.ZRevRank(setName, key).Result()
 }
 
-func (rc *redisClient) GetScore(setName string, key string) (float64, error){
+func (rc *RedisClient) GetScore(setName string, key string) (float64, error){
 	rc.SetClient()
 	return rc.client.ZScore(setName, key).Result()
 }
 
-func (rc *redisClient) RemScore(setName string, key string)  (int64, error){
+func (rc *RedisClient) RemScore(setName string, key string)  (int64, error){
 	rc.SetClient()
 	return rc.client.ZRem(setName, key).Result()
 }

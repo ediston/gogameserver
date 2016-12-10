@@ -16,7 +16,6 @@ const setName string = "00NeverAddThisSet"
 const setKey string  = "00NeverAddThisSetKey"
 var tempStrs  = [] string{"00NeverAddThiskey0", "00NeverAddThiskey1",  "00NeverAddThiskey2", "00NeverAddThiskey3", "00NeverAddThiskey4",  "00NeverAddThiskey5"}
 
-
 func TestSaveKeyValTemporary(t *testing.T) {
     rc := rcl.New()
     rc.SaveKeyValTemporary(tempKeyStr, valStr, 1*time.Second) // 10 seconds 10*1000 000 000
@@ -32,7 +31,6 @@ func TestSaveKeyValTemporary(t *testing.T) {
     }
 }
 
-// 
 func TestSaveKeyValForever(t *testing.T) {
     rc := rcl.New()
     rc.SaveKeyValForever(keyStr, valStr)
@@ -43,7 +41,6 @@ func TestSaveKeyValForever(t *testing.T) {
     rc.DelKey(keyStr)
 }
 
-// 
 func TestGetVal(t *testing.T) {
     rc := rcl.New()
     rc.SaveKeyValForever(keyStr, valStr)
