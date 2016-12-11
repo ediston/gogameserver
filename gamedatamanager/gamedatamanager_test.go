@@ -113,6 +113,30 @@ func TestGetTopPlayers(t *testing.T) {
         gm.DelPlayerData(GAMENAME, PLAYERIDS[i])
         gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
     }
+} 
+
+func TestGetScoreOfFriends(t *testing.T) {
+    gm := gdm.New()
+    scores := []float64{2,1,7,4, 3}
+    for i:=0; i<5; i++ {
+        gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
+        playerData := dt.NewWithId(PLAYERIDS[i]) 
+        playerData.A = scores[i]
+        gm.StorePlayerData(GAMENAME, playerData)
+        gm.StorePlayerScore(GAMENAME, scores[i], PLAYERIDS[i])
+    }
+    scoresOfFriends := gm.GetScoreOfFriends(GAMENAME, PLAYERIDS[0], PLAYERIDS[2:5])
+    scoresOfFriendsExpectedStr := "{\"PlayerIds\":[\"00NeverAddThispid0\",\"00NeverAddThispid3\",\"00NeverAddThispid4\",\"00NeverAddThispid5\"],\"Scores\":[2,7,4,3]}"
+    if scoresOfFriends != scoresOfFriendsExpectedStr{
+        t.Errorf("TestGetScoreOfFriends Error: scoresOfFriends str is : %s\n", scoresOfFriends)
+    }
+
+    for i:=0; i<5; i++ {
+        gm.DelPlayerData(GAMENAME, PLAYERIDS[i])
+        gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
+    }
 }
+
+
 
 

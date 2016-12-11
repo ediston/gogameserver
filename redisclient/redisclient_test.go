@@ -9,7 +9,7 @@ import (
 )
 
 
-const tempKeyStr string  = "00NeverAddThiskeytemp"
+const tempKeyStr string = "00NeverAddThiskeytemp"
 const keyStr string  = "00NeverAddThiskey"
 const valStr string  = "00NeverAddThisVal"
 const setName string = "00NeverAddThisSet"
