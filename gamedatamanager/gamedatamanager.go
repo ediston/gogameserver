@@ -56,15 +56,13 @@ func (gm * GameManager) StorePlayerScore(gameName string,  score float64, player
 		return false
 	} else {
 		if currHiScore < score {
-			log.Printf("Info:StorePlayerScore: currHiScore:%.6f, newScore:%.6f, Game %s, playerId %s", currHiScore, score, gameName, playerId)
 			pDataStr, found := gm.GetPlayerData(gameName, playerId)
 			if !found {
 				return false
 			}
 			pData := dt.JsonFromStr(pDataStr)
 			pData.A = score 
-			// a go routine to update
-			log.Printf("\nInfo: trying now::::  StorePlayerData: Game %s, playerData %v", gameName, pData)
+			// a go routine to update 
 			gm.StorePlayerData(gameName, pData)
 			gm.StorePlayerScoreWeek(gameName, score, playerId)
 
