@@ -5,6 +5,8 @@ import (
 	"log"
 	"reflect"
 	"encoding/json"
+
+	"gogameserver/util"
 	dt  "gogameserver/datatypes" 
     rcl "gogameserver/redisclient" 
 )
@@ -53,11 +55,6 @@ func (gm * GameManager) StorePlayerData(gameName string, playerData dt.PlayerDat
 	}
 }
 
-// store player new score for a week
-func (gm * GameManager) StorePlayerScoreWeek(gameName string, score float64, playerId string) {
-	gm.rc.AddToSet(gameName+"week", score, playerId)
-}
-
 // store player new score
 func (gm * GameManager) StorePlayerScore(gameName string,  score float64, playerId string) (bool){
 	currHiScore, err := gm.GetPlayerHighScore(gameName, playerId)
@@ -74,8 +71,7 @@ func (gm * GameManager) StorePlayerScore(gameName string,  score float64, player
 			pData.A = score 
 			// a go routine to update 
 			gm.StorePlayerData(gameName, pData)
-			gm.StorePlayerScoreWeek(gameName, score, playerId)
-
+			gm.StorePlayerScoreDaily(gameName, score, playerId)
 			redisRet, redisErr := gm.rc.AddToSet(gameName, score, playerId)
 			if redisErr != nil && redisErr.Error() != REDIS_NIL {
 				go log.Printf("Error:AddToSet: SUCESS gameName:%s, score:%f, playerId:%s, redisErr:%v", gameName, score, playerId, redisErr)
@@ -146,9 +142,17 @@ func (gm * GameManager) GetTopPlayers(gameName string, top int64) (string) {
 	}
 }
 
+// store player new score for a week
+func (gm * GameManager) StorePlayerScoreDaily(gameName string, score float64, playerId string) {
+	gm.rc.AddToSet(gameName+util.CurrentDate(), score, playerId)
+}
+
 // get top weekly 1000
-func (gm * GameManager) GetTopPlayersWeekly(gameName string) (string) {
-	return gm.GetTopPlayers(gameName+"weekly", 1000)
+func (gm * GameManager) GetTopPlayersOnDay(gameName string, topCount int64, numOfDaysOld int) (string) {
+	if numOfDaysOld > 6 {
+	  return "";
+	}
+	return gm.GetTopPlayers(gameName+util.GetDate(numOfDaysOld), topCount)
 }
 
 // get rank among friends
