@@ -23,9 +23,9 @@ func (gm * GameManager) GetPlayerData(gameName string, playerId string) (string,
 	playerDataStr, err := gm.rc.GetVal(gameName+playerId)
 	if err != nil {
 		go log.Printf("\nERROR:GetPlayerData: Game %s, playerId %s not found, err:%v", gameName, playerId, err)
-		return "player not found", true
+		return "player not found", false
 	} else {
-		return playerDataStr, false
+		return playerDataStr, true
 	}
 }
 
@@ -110,8 +110,12 @@ func (gm * GameManager) GetTopPlayers(gameName string, top int64) (string) {
         topPlayersWithScores.PlayerIds[i] = _pid
         topPlayersWithScores.Scores[i] = _score
     }
-    b, _ := json.Marshal(topPlayersWithScores)
-	return string(b)
+    b, jerr := json.Marshal(topPlayersWithScores)
+	if jerr == nil {
+		return string(b)
+	} else {
+		return "json error"
+	}
 }
 
 // get top weekly 1000
@@ -140,11 +144,16 @@ func (gm * GameManager) GetScoreOfFriends(gameName string, playerId string, frie
 		} else {
 			topPlayersWithScores.Scores[i] = score
 		}
-	}	
+	}
+	
 	topPlayersWithScores.PlayerIds[0] = playerId
 	topPlayersWithScores.Scores[0] =playerScore
-	b, _ := json.Marshal(topPlayersWithScores)
-	return string(b)
+	b, jerr := json.Marshal(topPlayersWithScores)
+	if jerr == nil {
+		return string(b)
+	} else {
+		return "json error"
+	}
 }
 
 
