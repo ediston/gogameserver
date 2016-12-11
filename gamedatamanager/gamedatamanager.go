@@ -103,7 +103,7 @@ func (gm * GameManager) GetPlayerRank(gameName string, playerId string) (int64) 
 		go log.Printf("Error:GetPlayerRank: Game %s, playerId %s", gameName, playerId)
 		return -1;
 	} else {
-		return rank;
+		return rank+1;
 	}
 }
 

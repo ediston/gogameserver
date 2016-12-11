@@ -7,8 +7,10 @@ import (
 )
 
 const GAMENAME string  = "00dummygame"
+const GAMENAME2 string  = "00dummygame"
 const PLAYERID string  = "00playerid"
 const PLAYERID2 string  = "002playerid"
+var PLAYERIDS  = [] string{"00NeverAddThispid0", "00NeverAddThispid1",  "00NeverAddThispid3", "00NeverAddThispid4", "00NeverAddThispid5"}
 
 func TestStorePlayerData(t *testing.T) {
     gm := gdm.New()
@@ -69,3 +71,17 @@ func TestStorePlayerScore(t *testing.T) {
     }
 }
 
+func TestGetPlayerRank(t *testing.T) {
+    gm := gdm.New()
+    scores := []float64{2,1,7,4, 3}
+    for i:=0; i<5; i++ {
+        gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
+        playerData := dt.NewWithId(PLAYERIDS[i]) 
+        playerData.A = scores[i]
+        gm.StorePlayerData(GAMENAME, playerData)
+    }
+    rank := gm.GetPlayerRank(GAMENAME, PLAYERIDS[2])
+    if rank != 1{
+        t.Errorf("TestGetPlayerRank Error: Player rank should have been 1 but is : %d\n", rank)
+    }
+}
