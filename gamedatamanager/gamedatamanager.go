@@ -31,14 +31,24 @@ func (gm * GameManager) GetPlayerData(gameName string, playerId string) (string,
 	}
 }
 
+func (gm * GameManager) DelPlayerData(gameName string, playerId string) (int64, bool) {
+	redisRet, err := gm.rc.DelKey(gameName+playerId)
+	if err != nil && err.Error() != REDIS_NIL {
+		go log.Printf("\nERROR:DelPlayerData: Game %s, playerId %s not found, err:%v", gameName, playerId, err)
+		return -1, false
+	} else {
+		return redisRet, true
+	}
+}
+
 // store player data
 func (gm * GameManager) StorePlayerData(gameName string, playerData dt.PlayerData) (bool){
 	err := gm.rc.SaveKeyValForever(gameName+playerData.I, dt.Str(playerData))
 	if err != nil && err.Error() != REDIS_NIL {
-		log.Printf("\nERROR:StorePlayerData: Game %s, playerData %v, err:%v", gameName, playerData, err)
+		go log.Printf("\nERROR:StorePlayerData: Game %s, playerData %v, err:%v", gameName, playerData, err)
 		return false
 	} else {
-		log.Printf("\nInfo: Success StorePlayerData: Game %s, playerData %v", gameName, playerData)
+		go log.Printf("\nInfo: Success StorePlayerData: Game %s, playerData %v", gameName, playerData)
 		return true
 	}
 }
@@ -68,12 +78,12 @@ func (gm * GameManager) StorePlayerScore(gameName string,  score float64, player
 
 			redisRet, redisErr := gm.rc.AddToSet(gameName, score, playerId)
 			if redisErr != nil && redisErr.Error() != REDIS_NIL {
-				log.Printf("Error:AddToSet: SUCESS gameName:%s, score:%f, playerId:%s, redisErr:%v", gameName, score, playerId, redisErr)
+				go log.Printf("Error:AddToSet: SUCESS gameName:%s, score:%f, playerId:%s, redisErr:%v", gameName, score, playerId, redisErr)
 				return false
 			}	
-			log.Printf("Info:StorePlayerScore: SUCESS currHiScore:%.6f, newScore:%.6f, Game %s, playerId %s, retcode:%d", currHiScore, score, gameName, playerId, redisRet)
+			go log.Printf("Info:StorePlayerScore: SUCESS currHiScore:%.6f, newScore:%.6f, Game %s, playerId %s, retcode:%d", currHiScore, score, gameName, playerId, redisRet)
 		} else {
-			log.Printf("Info:StorePlayerScore: Already high currHiScore:%.6f, newScore:%.6f, Game %s, playerId %s", currHiScore, score, gameName, playerId)
+			go log.Printf("Info:StorePlayerScore: Already high currHiScore:%.6f, newScore:%.6f, Game %s, playerId %s", currHiScore, score, gameName, playerId)
 		}
 		return true
 	}
@@ -83,10 +93,10 @@ func (gm * GameManager) StorePlayerScore(gameName string,  score float64, player
 func (gm * GameManager) DeletePlayerScore(gameName string,  playerId string) (bool){
 	redisRet, redisErr := gm.rc.RemScore(gameName, playerId)
 	if redisErr != nil && redisErr.Error() != REDIS_NIL {
-		log.Printf("Error:DeletePlayerScore: SUCESS gameName:%s, playerId:%s, redisErr:%v", gameName, playerId, redisErr)
+		go log.Printf("Error:DeletePlayerScore: SUCESS gameName:%s, playerId:%s, redisErr:%v", gameName, playerId, redisErr)
 		return false
 	} else {
-		log.Printf("Info :DeletePlayerScore: SUCESS gameName:%s,  playerId:%s, redisRet:%d", gameName, playerId, redisRet)
+		go log.Printf("Info :DeletePlayerScore: SUCESS gameName:%s,  playerId:%s, redisRet:%d", gameName, playerId, redisRet)
 	}
 	return true
 }
@@ -115,10 +125,9 @@ func (gm * GameManager) GetTopPlayers(gameName string, top int64) (string) {
 	if err != nil && err.Error() != REDIS_NIL{
 		go log.Printf("Error:GetTopPlayers: Game %s", gameName)
 		return ""
-	} else {
-		go log.Printf("Error:GetTopPlayers: Game %s", gameName)
 	}
     topResultsVal := reflect.ValueOf(topResults)
+    log.Printf("Info: GetTopPlayers: topResultsVal %v", topResultsVal)
     resultCount := topResultsVal.Len()
     topPlayersWithScores.PlayerIds = make([]string, resultCount)
     topPlayersWithScores.Scores = make([]float64, resultCount)
@@ -128,6 +137,7 @@ func (gm * GameManager) GetTopPlayers(gameName string, top int64) (string) {
         topPlayersWithScores.PlayerIds[i] = _pid
         topPlayersWithScores.Scores[i] = _score
     }
+    log.Printf("Info: GetTopPlayers: topPlayersWithScores %v", topPlayersWithScores)
     b, jerr := json.Marshal(topPlayersWithScores)
 	if jerr == nil {
 		return string(b)
