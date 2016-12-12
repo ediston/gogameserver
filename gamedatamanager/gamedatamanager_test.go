@@ -59,7 +59,7 @@ func TestStorePlayerScore(t *testing.T) {
             }
             playerDataStrFromDB, success := gm.GetPlayerData(GAMENAME, PLAYERID)
             if !success {
-                t.Errorf("TestStorePlayerScore Error: GetPlayerData\n", )
+                t.Errorf("TestStorePlayerScore Error: GetPlayerData\n")
             } else {
                 playerData.A = newScore
                 playerDataStr :=  dt.Str(playerData)

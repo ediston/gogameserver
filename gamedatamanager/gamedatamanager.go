@@ -24,8 +24,9 @@ func New() (gm * GameManager) {
 }
 
 func (gm * GameManager) GetPlayerData(gameName string, playerId string) (string, bool) {
-	playerDataStr, err := gm.rc.GetVal(gameName+playerId)
-	if err != nil && err.Error() != REDIS_NIL {
+	gameName = gameName+playerId
+	playerDataStr, err := gm.rc.GetVal(gameName)
+	if err != nil && err.Error() == REDIS_NIL {
 		go log.Printf("\nERROR:GetPlayerData: Game %s, playerId %s not found, err:%v", gameName, playerId, err)
 		return "player not found", false
 	} else {
@@ -34,7 +35,8 @@ func (gm * GameManager) GetPlayerData(gameName string, playerId string) (string,
 }
 
 func (gm * GameManager) DelPlayerData(gameName string, playerId string) (int64, bool) {
-	redisRet, err := gm.rc.DelKey(gameName+playerId)
+	gameName = gameName+playerId
+	redisRet, err := gm.rc.DelKey(gameName)
 	if err != nil && err.Error() != REDIS_NIL {
 		go log.Printf("\nERROR:DelPlayerData: Game %s, playerId %s not found, err:%v", gameName, playerId, err)
 		return -1, false
@@ -45,7 +47,8 @@ func (gm * GameManager) DelPlayerData(gameName string, playerId string) (int64, 
 
 // store player data
 func (gm * GameManager) StorePlayerData(gameName string, playerData dt.PlayerData) (bool){
-	err := gm.rc.SaveKeyValForever(gameName+playerData.I, dt.Str(playerData))
+	gameName = gameName+playerData.I
+	err := gm.rc.SaveKeyValForever(gameName, dt.Str(playerData))
 	if err != nil && err.Error() != REDIS_NIL {
 		go log.Printf("\nERROR:StorePlayerData: Game %s, playerData %v, err:%v", gameName, playerData, err)
 		return false
@@ -58,10 +61,15 @@ func (gm * GameManager) StorePlayerData(gameName string, playerData dt.PlayerDat
 // store player new score
 func (gm * GameManager) StorePlayerScore(gameName string,  score float64, playerId string) (bool){
 	currHiScore, err := gm.GetPlayerHighScore(gameName, playerId)
+	
 	if err != nil && err.Error() != REDIS_NIL {
 		log.Printf("ERROR:StorePlayerScore: Game %s, playerId %s not found. err:'%s'", gameName, playerId, err.Error() )
 		return false
 	} else {
+		hiScoretoday, _ := gm.GetPlayerScoreOnDay(gameName,  playerId , 0) 
+		if hiScoretoday < score {
+			gm.StorePlayerScoreDaily(gameName , score , playerId)
+		}
 		if currHiScore < score {
 			pDataStr, found := gm.GetPlayerData(gameName, playerId)
 			if !found {
@@ -71,7 +79,6 @@ func (gm * GameManager) StorePlayerScore(gameName string,  score float64, player
 			pData.A = score 
 			// a go routine to update 
 			gm.StorePlayerData(gameName, pData)
-			gm.StorePlayerScoreDaily(gameName, score, playerId)
 			redisRet, redisErr := gm.rc.AddToSet(gameName, score, playerId)
 			if redisErr != nil && redisErr.Error() != REDIS_NIL {
 				go log.Printf("Error:AddToSet: SUCESS gameName:%s, score:%f, playerId:%s, redisErr:%v", gameName, score, playerId, redisErr)
@@ -97,10 +104,6 @@ func (gm * GameManager) DeletePlayerScore(gameName string,  playerId string) (bo
 	return true
 }
 
-// get score
-func (gm * GameManager) GetPlayerHighScore(gameName string, playerId string) (float64, error) {
-	return gm.rc.GetScore(gameName, playerId)
-}
 
 // get player rank
 func (gm * GameManager) GetPlayerRank(gameName string, playerId string) (int64) {
@@ -142,9 +145,19 @@ func (gm * GameManager) GetTopPlayers(gameName string, top int64) (string) {
 	}
 }
 
+// get score
+func (gm * GameManager) GetPlayerHighScore(gameName string, playerId string) (float64, error) {
+	return gm.rc.GetScore(gameName, playerId)
+}
+
 // store player new score for a week
 func (gm * GameManager) StorePlayerScoreDaily(gameName string, score float64, playerId string) {
 	gm.rc.AddToSet(gameName+util.CurrentDate(), score, playerId)
+}
+
+// store player new score for a week
+func (gm * GameManager) GetPlayerScoreOnDay(gameName string, playerId string, numOfDaysOld int) (float64, error) {
+	return gm.GetPlayerHighScore(gameName+util.GetDate(numOfDaysOld), playerId)
 }
 
 // get top weekly 1000

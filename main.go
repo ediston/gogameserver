@@ -11,11 +11,18 @@ var (
     AppLogFileName      = "/app/log/app.log"
 )
 
+func cleaner(){
+    for range time.Tick(time.Day *1){
+        // delete 
+    }
+}
+
 func echoString(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintf(w, "hello")
 }
 
 func main() {
+    go cleaner()
     InitLogging(AppLogFileName)
   
     http.HandleFunc("/", echoString)
@@ -27,7 +34,7 @@ func InitLogging(logFileName string) {
     if err != nil {
         fmt.Println(err)
     }
-
+    
     log.SetFlags(0)
     log.SetOutput(newLog)
-} 
+}
