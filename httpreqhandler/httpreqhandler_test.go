@@ -79,8 +79,8 @@ func TestHandleUpdatePlayerScore(t *testing.T) {
     gameName    := GAMENAME
     playerId    := PLAYERID
     score       := 20
-    scoreF      := 20.0f 
-    
+    scoreF      := 20.0
+
     url.WriteString("http://gogameserver.com/results?")
     url.WriteString(GAMENAMESHORT + "="+gameName + "&")
     url.WriteString(PLAYERIDSHORT + "="+playerId + "&") 
@@ -88,7 +88,7 @@ func TestHandleUpdatePlayerScore(t *testing.T) {
 
     urlStr   := url.String()
 
-    req, err := http.NewRequest("GET", urlStr, nil)
+    req, _ := http.NewRequest("GET", urlStr, nil)
 
     // let's add data to the redis db
     gm := gdm.New()
@@ -134,4 +134,53 @@ func TestHandleUpdatePlayerScore(t *testing.T) {
     gm.DeletePlayerScore(GAMENAME, PLAYERID)
 }
 
+func TestHandleGetPlayerRank(t *testing.T) {
+    var url         bytes.Buffer
 
+    gameName    := GAMENAME
+    playerId    := PLAYERID
+
+    url.WriteString("http://gogameserver.com/results?")
+    url.WriteString(GAMENAMESHORT + "="+gameName + "&")
+    url.WriteString(PLAYERIDSHORT + "="+playerId + "&") 
+
+    urlStr   := url.String()
+
+    req, _ := http.NewRequest("GET", urlStr, nil)
+
+    // let's add data to the redis dbb
+    gm := gdm.New()
+    scores := []float64{2,1,7,4, 3}
+    for i:=0; i<5; i++ {
+        gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
+        playerData := dt.NewWithId(PLAYERIDS[i]) 
+        playerData.A = scores[i]
+        gm.StorePlayerData(GAMENAME, playerData)
+        gm.StorePlayerScore(GAMENAME, scores[i], PLAYERIDS[i])
+    }
+
+    // continue
+    rr := httptest.NewRecorder()
+    handler := http.HandlerFunc(HandleGetPlayerRank)
+
+    // Our handlers satisfy http.Handler, so we can call their ServeHTTP method 
+    // directly and pass in our Request and ResponseRecorder.
+    handler.ServeHTTP(rr, req)
+
+    // Check the status code is what we expect.
+    if status := rr.Code; status != http.StatusOK {
+        t.Errorf("Handler returned wrong status code: got %v want %v", status, http.StatusOK)
+    }
+
+    rank := gm.GetPlayerRank(GAMENAME, PLAYERIDS[2])
+    if rank != 1{
+        t.Errorf("TestGetPlayerRank Error: Player rank should have been 1 but is : %d\n", rank)
+    }
+
+    for i:=0; i<5; i++ {
+        gm.DelPlayerData(GAMENAME, PLAYERIDS[i])
+        gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
+    }
+
+   
+}
