@@ -86,3 +86,18 @@ func JsonFromStr(s string) PlayerData {
     	return NewWithId("-1")
     }
 }
+
+type PlayerScore struct {
+	N string // Name
+	S float64 // Score
+}
+
+// ByScoreRev implements sort.Interface for []PlayerScore based on
+// the Score field in decreasing order
+type ByScoreRev []PlayerScore
+
+func (a ByScoreRev) Len() int           { return len(a) }
+func (a ByScoreRev) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByScoreRev) Less(i, j int) bool { return a[i].S > a[j].S }
+
+

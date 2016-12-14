@@ -1,9 +1,17 @@
 package gamedatamanager_test
 
 import (
-    dt  "gogameserver/datatypes"
-    gdm "gogameserver/gamedatamanager" 
+    dt   "gogameserver/datatypes"
+    gdm  "gogameserver/gamedatamanager"
+    util "gogameserver/util"
+
     "testing"
+    "math/rand"
+    "time"
+    "strconv"
+    "encoding/json"
+
+    "sort"
 )
 
 const GAMENAME string  = "00dummygame" 
@@ -137,6 +145,70 @@ func TestGetScoreOfFriends(t *testing.T) {
     }
 }
 
+func TestGetTopPlayersThisWeek(t *testing.T) {
+    gm := gdm.New()
 
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+   
+    scores := make([] float64, 0)
+    names  := make([] string, 10)
+    id     := make([] string, 10)
+
+    for i:=0; i<10; i++ {
+        names[i] = util.RandStringRunes(5)
+        id[i] = strconv.Itoa(i)
+        playerData := dt.NewWithId(id[i]) 
+        playerData.N = names[i]
+        gm.StorePlayerData(GAMENAME, playerData)
+    }
+    
+
+    playerMaxScore := make(map[string] float64)
+    for i:=0; i<10; i++ {
+        playerMaxScore[names[i]] = 0
+    }
+
+    // for 7 days
+    for d:=0; d<7; d++ {
+        gm.DelKey(GAMENAME+util.GetDate(d))
+        for i:=0; i<10; i++ {
+            score := r.Float64()*100
+            scores = append(scores, score)
+            if playerMaxScore[names[i]] < score {
+               playerMaxScore[names[i]] = score
+            }
+            gm.StorePlayerScoreOnADay(GAMENAME, score, id[i], d) 
+        }
+    } 
+
+    playeScores := make([]dt.PlayerScore, 0)
+    for k,v := range playerMaxScore {
+        playeScores = append(playeScores, dt.PlayerScore{k, v})
+    }
+   
+    sort.Sort(dt.ByScoreRev(playeScores))
+
+    topCount := 5
+    topWeeklyScorersJson := gm.GetTopPlayersThisWeek(GAMENAME, int64(topCount) )
+    var topWeeklyScorers []dt.PlayerScore
+    json.Unmarshal([]byte(topWeeklyScorersJson), &topWeeklyScorers)
+
+
+    for i:=0; i<topCount; i++{
+        if playeScores[i].N != topWeeklyScorers[i].N || playeScores[i].S != topWeeklyScorers[i].S {
+            t.Errorf("Error: TestGetTopPlayersThisWeek,  playeScores[i] : %v\n, topWeeklyScorers[i]: %v\n", playeScores[i], topWeeklyScorers[i])
+        }
+    }
+
+    for i:=0; i<10; i++ {
+        gm.DelPlayerData(GAMENAME, id[i])
+    }
+
+    for d:=0; d<7; d++ {
+        for i:=0; i<10; i++ {
+            gm.DeletePlayerScoreOnADay(GAMENAME ,  id[i], d)
+        }
+    }
+}
 
 

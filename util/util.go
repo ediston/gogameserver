@@ -4,7 +4,10 @@ import (
    "time"
    "net/http"
    "strconv"
+   "math/rand"
 )
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func CurrentDate() string {
     return GetDate(0)
@@ -39,4 +42,13 @@ func URLParamFloat(req *http.Request, paramName string, defParamVal float64) flo
 		return f
 	}
 	return defParamVal
+}
+
+func RandStringRunes(n int) string {
+    rand.Seed(time.Now().UnixNano())
+    b := make([]rune, n)
+    for i := range b {
+        b[i] = letterRunes[rand.Intn(len(letterRunes))]
+    }
+    return string(b)
 }

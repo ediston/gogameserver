@@ -59,7 +59,7 @@ func HandleGetTopScorers(respWriter http.ResponseWriter, reqFromClient *http.Req
 
     switch topType {
         case WEEK: 
-            respToClient[WEEK] = gm.GetTopPlayersOnDay(gameName , topAmount, 0)
+            respToClient[WEEK] = gm.GetTopPlayersThisWeek(gameName , topAmount)
         
         case DAY: 
             respToClient[DAY] = gm.GetTopPlayersOnDay(gameName , topAmount, 0)

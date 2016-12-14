@@ -50,8 +50,6 @@ func TestHandleUpdatePlayerData(t *testing.T) {
     rr := httptest.NewRecorder()
     handler := http.HandlerFunc(HandleUpdatePlayerData)
 
-    // Our handlers satisfy http.Handler, so we can call their ServeHTTP method 
-    // directly and pass in our Request and ResponseRecorder.
     handler.ServeHTTP(rr, req)
 
     // Check the status code is what we expect.
@@ -102,8 +100,7 @@ func TestHandleUpdatePlayerScore(t *testing.T) {
     rr := httptest.NewRecorder()
     handler := http.HandlerFunc(HandleUpdatePlayerScore)
 
-    // Our handlers satisfy http.Handler, so we can call their ServeHTTP method 
-    // directly and pass in our Request and ResponseRecorder.
+ 
     handler.ServeHTTP(rr, req)
 
     // Check the status code is what we expect.
@@ -163,8 +160,6 @@ func TestHandleGetPlayerRank(t *testing.T) {
     rr := httptest.NewRecorder()
     handler := http.HandlerFunc(HandleGetPlayerRank)
 
-    // Our handlers satisfy http.Handler, so we can call their ServeHTTP method 
-    // directly and pass in our Request and ResponseRecorder.
     handler.ServeHTTP(rr, req)
 
     // Check the status code is what we expect.
@@ -180,7 +175,15 @@ func TestHandleGetPlayerRank(t *testing.T) {
     for i:=0; i<5; i++ {
         gm.DelPlayerData(GAMENAME, PLAYERIDS[i])
         gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
-    }
+    } 
+}
 
-   
+func TestHandleGetTopScorersDaily(t *testing.T) {
+    gameName    := GAMENAME
+    playerId    := PLAYERID
+
+    url.WriteString("http://gogameserver.com/results?")
+    url.WriteString(GAMENAMESHORT + "="+gameName + "&")
+
+    
 }
