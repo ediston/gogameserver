@@ -170,27 +170,30 @@ func (gm * GameManager) GetPlayerRank(gameName string, playerId string) (int64) 
 }
 
 // get top x
-func (gm * GameManager) GetTopPlayers(gameName string, top int64) (string) {
-    var topPlayersWithScores dt.ResponseData
+func (gm * GameManager) GetTopPlayers(gameName string, topCount int64) (string) {
+	playeScores := make([]dt.PlayerScore, 0)
 
-	topResults, err := gm.rc.GetTop(gameName, top)
+	topResults, err := gm.rc.GetTop(gameName, topCount)
 	if err != nil && err.Error() != REDIS_NIL{
 		go log.Printf("Error:GetTopPlayers: Game %s", gameName)
-		return ""
+		return "json error"
 	}
     topResultsVal := reflect.ValueOf(topResults)
-    log.Printf("Info: GetTopPlayers: topResultsVal %v", topResultsVal)
     resultCount := topResultsVal.Len()
-    topPlayersWithScores.PlayerIds = make([]string, resultCount)
-    topPlayersWithScores.Scores = make([]float64, resultCount)
     for i:=0; i<resultCount; i++ {
     	_score,_  := topResultsVal.Index(i).Field(0).Interface().(float64)
     	_pid,_  := topResultsVal.Index(i).Field(1).Interface().(string)
-        topPlayersWithScores.PlayerIds[i] = _pid
-        topPlayersWithScores.Scores[i] = _score
+    	_name,_ := gm.GetPlayerName(gameName, _pid)
+    	playeScores = append(playeScores, dt.PlayerScore{_name, _score})
     }
-    //go log.Printf("Info: GetTopPlayers: topPlayersWithScores %v", topPlayersWithScores)
-    b, jerr := json.Marshal(topPlayersWithScores)
+
+	sort.Sort(dt.ByScoreRev(playeScores))
+ 
+	if topCount < int64(len(playeScores)) {
+		playeScores = playeScores[:topCount]
+	}
+	go log.Printf("Info: GetTopPlayers: top %d playeScores: %v", topCount, playeScores)
+	b, jerr := json.Marshal(playeScores)
 	if jerr == nil {
 		return string(b)
 	} else {
@@ -235,7 +238,38 @@ func (gm * GameManager) GetTopPlayersOnDay(gameName string, topCount int64, numO
 	if numOfDaysOld > 6 {
 	  return "";
 	}
-	return gm.GetTopPlayers(gameName+util.GetDate(numOfDaysOld), topCount)
+
+	playeScores := make([]dt.PlayerScore, 0)
+
+	dateGameName := gameName+util.GetDate(numOfDaysOld)
+
+	topResults, err := gm.rc.GetTop(dateGameName, topCount)
+	if err != nil && err.Error() != REDIS_NIL{
+		go log.Printf("Error:GetTopPlayersOnDay: dateGameName %s", dateGameName)
+		return "json error"
+	}
+    topResultsVal := reflect.ValueOf(topResults)
+    resultCount := topResultsVal.Len()
+    for i:=0; i<resultCount; i++ {
+    	_score,_  := topResultsVal.Index(i).Field(0).Interface().(float64)
+    	_pid,_  := topResultsVal.Index(i).Field(1).Interface().(string)
+    	_name,_ := gm.GetPlayerName(gameName, _pid)
+    	playeScores = append(playeScores, dt.PlayerScore{_name, _score})
+    }
+
+	sort.Sort(dt.ByScoreRev(playeScores))
+ 
+	if topCount < int64(len(playeScores)) {
+		playeScores = playeScores[:topCount]
+	}
+	go log.Printf("Info: GetTopPlayersOnDay: top %d playeScores: %v", topCount, playeScores)
+	b, jerr := json.Marshal(playeScores)
+	if jerr == nil {
+		return string(b)
+	} else {
+		return "json error"
+	}
+
 }
 
 func (gm * GameManager) GetTopPlayersThisWeek(gameName string, topCount int64) (string) {
@@ -259,8 +293,6 @@ func (gm * GameManager) GetTopPlayersThisWeek(gameName string, topCount int64) (
 	}
 
 	sort.Sort(dt.ByScoreRev(playeScores))
-
-	log.Printf("Info: GetTopPlayersThisWeek: before playeScores %v", playeScores)
 
 	for i:=0; i<len(playeScores) && i<int(topCount); i++ {
 		if _,ok := donePersons[playeScores[i].N]; !ok {
@@ -288,7 +320,7 @@ func (gm * GameManager) GetScoreOfFriends(gameName string, playerId string, frie
 	var topPlayersWithScores dt.ResponseData
 	playerScore, err := gm.GetPlayerHighScore(gameName, playerId)
 	if err != nil && err.Error() != REDIS_NIL {
-		go log.Printf("Error:GetRankAmongFriends: Error: %v", err)
+		go log.Printf("Error:GetScoreOfFriends: Error: %v", err)
 		return ""
 	}
     
@@ -300,7 +332,7 @@ func (gm * GameManager) GetScoreOfFriends(gameName string, playerId string, frie
 		topPlayersWithScores.Scores[i] = -1
 		score, err1 := gm.GetPlayerHighScore(gameName, friendIds[i-1])
 		if err1 != nil && err1.Error() != REDIS_NIL {
-			go log.Printf("Error:GetTopPlayers: Game %s, %v", gameName, err1)
+			go log.Printf("Error:GetScoreOfFriends: Game %s, %v", gameName, err1)
 		} else {
 			topPlayersWithScores.Scores[i] = score
 		}
@@ -315,5 +347,3 @@ func (gm * GameManager) GetScoreOfFriends(gameName string, playerId string, frie
 		return "json error"
 	}
 }
-
-

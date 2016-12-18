@@ -101,27 +101,6 @@ func TestGetPlayerRank(t *testing.T) {
     }
 }
 
-func TestGetTopPlayers(t *testing.T) {
-    gm := gdm.New()
-    scores := []float64{2,1,7,4, 3}
-    for i:=0; i<5; i++ {
-        gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
-        playerData := dt.NewWithId(PLAYERIDS[i]) 
-        playerData.A = scores[i]
-        gm.StorePlayerData(GAMENAME, playerData)
-        gm.StorePlayerScore(GAMENAME, scores[i], PLAYERIDS[i])
-    }
-    top3 := gm.GetTopPlayers(GAMENAME, 3)
-    top3ExpectedStr := "{\"PlayerIds\":[\"00NeverAddThispid3\",\"00NeverAddThispid4\",\"00NeverAddThispid5\"],\"Scores\":[7,4,3]}"
-    if top3 != top3ExpectedStr{
-        t.Errorf("TestGetTopPlayers Error: top3 is : %s\n", top3)
-    }
-
-    for i:=0; i<5; i++ {
-        gm.DelPlayerData(GAMENAME, PLAYERIDS[i])
-        gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
-    }
-} 
 
 func TestGetScoreOfFriends(t *testing.T) {
     gm := gdm.New()
@@ -145,6 +124,46 @@ func TestGetScoreOfFriends(t *testing.T) {
     }
 }
 
+func TestGetTopPlayers(t *testing.T) {
+    gm := gdm.New()
+    scores := []float64{2,1,7,4, 3}
+    names  := make([] string, 5)
+
+    playeScores := make([]dt.PlayerScore, 0)
+    gm.DelKey(GAMENAME)
+
+    for i:=0; i<5; i++ {
+        names[i] = util.RandStringRunes(5)
+        gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
+        playerData := dt.NewWithId(PLAYERIDS[i]) 
+        playerData.A = scores[i]
+        playerData.N = names[i]
+        gm.StorePlayerData(GAMENAME, playerData)
+        gm.StorePlayerScore(GAMENAME, scores[i], PLAYERIDS[i])
+
+        playeScores = append(playeScores, dt.PlayerScore{names[i], scores[i]})
+    }
+
+    sort.Sort(dt.ByScoreRev(playeScores))
+    topCount := 3
+    top3 := gm.GetTopPlayers(GAMENAME, int64(topCount) )
+    
+    var top3Scorers []dt.PlayerScore
+    json.Unmarshal([]byte(top3), &top3Scorers)
+
+    for i:=0; i<topCount; i++{
+        if playeScores[i].N != top3Scorers[i].N || playeScores[i].S != top3Scorers[i].S {
+            t.Errorf("Error: TestGetTopPlayers,  playeScores[i] : %v\n, top3Scorers[i]: %v\n", playeScores[i], top3Scorers[i])
+        }
+    }
+
+    for i:=0; i<5; i++ {
+        gm.DelPlayerData(GAMENAME, PLAYERIDS[i])
+        gm.DeletePlayerScore(GAMENAME, PLAYERIDS[i])
+    }
+
+} 
+
 func TestGetTopPlayersThisWeek(t *testing.T) {
     gm := gdm.New()
 
@@ -161,7 +180,7 @@ func TestGetTopPlayersThisWeek(t *testing.T) {
         playerData.N = names[i]
         gm.StorePlayerData(GAMENAME, playerData)
     }
-    
+
 
     playerMaxScore := make(map[string] float64)
     for i:=0; i<10; i++ {
@@ -190,9 +209,9 @@ func TestGetTopPlayersThisWeek(t *testing.T) {
 
     topCount := 5
     topWeeklyScorersJson := gm.GetTopPlayersThisWeek(GAMENAME, int64(topCount) )
+    
     var topWeeklyScorers []dt.PlayerScore
     json.Unmarshal([]byte(topWeeklyScorersJson), &topWeeklyScorers)
-
 
     for i:=0; i<topCount; i++{
         if playeScores[i].N != topWeeklyScorers[i].N || playeScores[i].S != topWeeklyScorers[i].S {
@@ -210,5 +229,4 @@ func TestGetTopPlayersThisWeek(t *testing.T) {
         }
     }
 }
-
 
