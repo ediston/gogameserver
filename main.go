@@ -5,7 +5,7 @@ import (
     "log"
     "net/http"
     "os"
-
+    "time"
     httpHandler "gogameserver/httpreqhandler"
 )
 
@@ -20,18 +20,18 @@ var (
 )
 
 func cleaner(){
-    for range time.Tick(time.Day *1){
+    for range time.Tick(60*time.Minute){
         // delete 
     }
 }
 
 func main() {
-    go cleaner()
+    //go cleaner()
     InitLogging(AppLogFileName)
     
     defineHandlers()
 
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    http.ListenAndServe(":8080", nil)
 }
 
 func handlePing(w http.ResponseWriter, req *http.Request) {
@@ -39,11 +39,11 @@ func handlePing(w http.ResponseWriter, req *http.Request) {
 }
 
 func defineHandlers(){
-    http.HandleFun(PING_URL,                 handlePing)
-    http.HandleFun(GET_TOP_PLAYERS_URL,     httpHandler.HandleGetTopScorers)
-    http.HandleFun(UPDATE_PLAYER_DATA_URL,     httpHandler.HandleUpdatePlayerData)
-    http.HandleFun(GET_PLAYER_RANK_URL,     httpHandler.HandleGetPlayerRank)
-    http.HandleFun(UPDATE_PLAYER_SCORE_URL,     httpHandler.HandleUpdatePlayerScore )
+    http.HandleFunc(PING_URL,                 handlePing)
+    http.HandleFunc(GET_TOP_PLAYERS_URL,     httpHandler.HandleGetTopScorers)
+    http.HandleFunc(UPDATE_PLAYER_DATA_URL,     httpHandler.HandleUpdatePlayerData)
+    http.HandleFunc(GET_PLAYER_RANK_URL,     httpHandler.HandleGetPlayerRank)
+    http.HandleFunc(UPDATE_PLAYER_SCORE_URL,     httpHandler.HandleUpdatePlayerScore )
 }
 
 func InitLogging(logFileName string) {
