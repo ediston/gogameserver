@@ -35,6 +35,7 @@ func main() {
 }
 
 func handlePing(w http.ResponseWriter, req *http.Request) {
+    log.Printf("Got Ping Request.\n", )
     fmt.Fprintf(w, "Gogameserver")
 }
 
