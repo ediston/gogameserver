@@ -182,7 +182,7 @@ func sendResponse(respWriter http.ResponseWriter, httpReq *http.Request, respToC
 }
 
 func logResponse(data []byte, elapsed time.Duration) { 
-    logMsg := "INFO: Response time: [%v] \"GET /api/v1/results HTTP/1.0\" %v %v %v"
+    logMsg := "INFO: Response time: [%v] \"GET HTTP/1.0\" %v %v %v"
     millisec := (float64(elapsed) / float64(time.Millisecond)) * 1000000
     log.Printf("Completed request in %v ms", millisec)
     log.Printf(logMsg, time.Now(), "200", len(data), millisec*1000)
