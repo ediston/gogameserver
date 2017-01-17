@@ -129,6 +129,41 @@ func HandleUpdatePlayerData(respWriter http.ResponseWriter, reqFromClient *http.
     go logResponse(respData, elapsed)
 }
 
+func HandleUpdatePlayerDataWithGetPlayerRank(respWriter http.ResponseWriter, reqFromClient *http.Request) {
+    var respToClient map[string]interface{}
+    var playerDataJson dt.PlayerData
+    start := time.Now()
+
+    gameName  := util.URLParamStr(reqFromClient, GAMENAMESHORT, "") // gamename:
+    playerId := util.URLParamStr(reqFromClient, PLAYERIDSHORT, "")  //  player id
+    score := util.URLParamFloat(reqFromClient, SCORESHORT, 0)  //  score
+
+    if reqFromClient.Body == nil || gameName == "" || playerId == "" {
+        handleEmptyInputs(respWriter, reqFromClient, gameName, playerId)
+        return
+    }
+
+    err := json.NewDecoder(reqFromClient.Body).Decode(&playerDataJson)
+    if err != nil {
+        handleEmptyInputs(respWriter, reqFromClient, gameName, playerId + ": error")
+        return
+    }
+
+    gm := gdm.New() // game manager
+    gm.StorePlayerData(gameName, playerDataJson)
+    gm.StorePlayerScore(gameName, score, playerId)
+
+    respToClient = map[string]interface{}{
+        PLAYERRANK    : gm.GetPlayerRank(gameName , playerId ),
+        PLAYERIDSHORT : playerId,
+        GAMENAMESHORT : gameName,
+    }
+
+    respData := sendResponse(respWriter, reqFromClient, respToClient)
+    elapsed := time.Since(start) / time.Millisecond
+    go logResponse(respData, elapsed)
+}
+
 func HandleUpdatePlayerScore(respWriter http.ResponseWriter, reqFromClient *http.Request) {
     var respToClient map[string]interface{}
 

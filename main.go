@@ -16,6 +16,7 @@ var (
     UPDATE_PLAYER_DATA_URL = os.Getenv("UPDATE_PLAYER_DATA_URL")
     GET_PLAYER_RANK_URL = os.Getenv("GET_PLAYER_RANK_URL")
     UPDATE_PLAYER_SCORE_URL = os.Getenv("UPDATE_PLAYER_SCORE_URL")  
+    UPDATE_PLAYER_DATA_SCORE_AND_GET_RANK_URL = os.Getenv("UPDATE_PLAYER_DATA_SCORE_AND_GET_RANK_URL")
     PING_URL = os.Getenv("PING_URL")  
 )
 
@@ -45,6 +46,8 @@ func defineHandlers(){
     http.HandleFunc(UPDATE_PLAYER_DATA_URL,     httpHandler.HandleUpdatePlayerData)
     http.HandleFunc(GET_PLAYER_RANK_URL,     httpHandler.HandleGetPlayerRank)
     http.HandleFunc(UPDATE_PLAYER_SCORE_URL,     httpHandler.HandleUpdatePlayerScore )
+    http.HandleFunc(UPDATE_PLAYER_DATA_SCORE_AND_GET_RANK_URL,
+                    httpHandler.HandleUpdatePlayerDataWithGetPlayerRank )
 }
 
 func InitLogging(logFileName string) {
