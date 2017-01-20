@@ -16,7 +16,7 @@ func New() (rc * RedisClient) {
 	        DialTimeout:  10 * time.Second,
 	        ReadTimeout:  30 * time.Second,
 	        WriteTimeout: 30 * time.Second,
-	        PoolSize:     10000,
+	        PoolSize:     1,
 	        PoolTimeout:  30 * time.Second,
     	}),
     }
@@ -32,7 +32,7 @@ func (rc *RedisClient) SetClient(){
         DialTimeout:  10 * time.Second,
         ReadTimeout:  30 * time.Second,
         WriteTimeout: 30 * time.Second,
-        PoolSize:     10000,
+        PoolSize:     1,
         PoolTimeout:  30 * time.Second,
     })
 }
